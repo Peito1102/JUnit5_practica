@@ -1,14 +1,16 @@
 package org.vasquez.junit5app.ejemplos;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.*;
 import org.vasquez.junit5app.ejemplos.exceptions.DineroInsuficienteException;
 import org.vasquez.junit5app.ejemplos.models.Banco;
 import org.vasquez.junit5app.ejemplos.models.Cuenta;
 
 import java.math.BigDecimal;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CuentaTest {
     Cuenta cuenta;
 
@@ -20,8 +22,17 @@ class CuentaTest {
 
     @AfterEach
     void tearDown() {
-        this.cuenta = new Cuenta("Renzo", new BigDecimal("1000.2354"));
         System.out.println("finalizando el método prueba.");
+    }
+
+    @BeforeAll
+    static void beforeAll() {
+        System.out.println("inicializando el test");
+    }
+
+    @AfterAll
+    static void afterAll() {
+        System.out.println("finalizando el test");
     }
 
     @Test
@@ -40,7 +51,7 @@ class CuentaTest {
     @Test
     @DisplayName("probando el saldo de la cuenta corriente, que no sea null, mayor que 0, valor esperado")
     void test_saldo_cuenta() {
-        cuenta = new Cuenta("Renzo", new BigDecimal("1000.2354"));
+        //cuenta = new Cuenta("Renzo", new BigDecimal("1000.2354"));
         assertEquals(1000.2354, cuenta.getSaldo().doubleValue());
         assertFalse(cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0);
         assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
@@ -126,5 +137,67 @@ class CuentaTest {
                 .findFirst().get().getPersona());},
         () -> {assertTrue(banco.getCuentas().stream().anyMatch(c -> c.getPersona().equals("Renzo V")));});
 
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    void testSoloWindows() {
+        
+    }
+
+    @Test
+    @EnabledOnOs({OS.LINUX,OS.MAC})
+    void testSoloLinuxMac() {
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void testNoWindows() {
+    }
+
+    @Test
+    @EnabledOnJre(JRE.JAVA_8)
+    void soloJdk8() {
+    }
+
+    @Test
+    @EnabledOnJre(JRE.JAVA_15)
+    void soloJdk15() {
+    }
+
+    @Test
+    @DisabledOnJre(JRE.JAVA_15)
+    void testNoJDK15() {
+    }
+
+    @Test
+    void imprimirSystemProperties() {
+        Properties properties = System.getProperties();
+        properties.forEach((k,v) -> System.out.println(k + " : " + v));
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "java.version", matches = "15.0.2")
+    void testJavaVersion() {
+    }
+
+    @Test
+    @DisabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
+    void testSolo64() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
+    void testNo64() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "user.name", matches = "Renzo")
+    void testUsername() {
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "ENV", matches = "dev") //para que funcione se debe editar el runner
+    void testDev() {
     }
 }
