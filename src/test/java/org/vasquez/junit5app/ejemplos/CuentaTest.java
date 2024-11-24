@@ -2,6 +2,8 @@ package org.vasquez.junit5app.ejemplos;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.vasquez.junit5app.ejemplos.exceptions.DineroInsuficienteException;
 import org.vasquez.junit5app.ejemplos.models.Banco;
 import org.vasquez.junit5app.ejemplos.models.Cuenta;
@@ -271,7 +273,33 @@ class CuentaTest {
             assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
         });
     }
+    @DisplayName("Probando ando")
+    @RepeatedTest(value = 4, name = "{displayName} -  Repetecion {currentRepetition} de {totalRepetitions}")
+    void test_debito_cuenta_repetir(RepetitionInfo info) {
+        if (info.getCurrentRepetition() == 3) {
+            System.out.println("Ya repitrimos 3 veces");
+        }
+        cuenta = new Cuenta("Renzo", new BigDecimal("1000.2354"));
+        cuenta.debito(new BigDecimal(100));
+        assertNotNull(cuenta.getSaldo());
+        assertEquals(900,cuenta.getSaldo().intValue());
+        assertEquals("900.2354",cuenta.getSaldo().toPlainString());
+    }
 
+    @ParameterizedTest(name = "numero {index} ejecutando con valor {0} - {argumentsWithNames}")
+    @ValueSource(strings = {"100","200","300","500","700","1000.2354"})
+    void test_debito_cuenta_parametros_strings(String monto) {
+        cuenta.debito(new BigDecimal(monto));
+        assertNotNull(cuenta.getSaldo());
+        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
+    }
 
-
+    @ParameterizedTest(name = "numero {index} ejecutando con valor {0} - {argumentsWithNames}")
+    @ValueSource(doubles = {100,200,300,500,700,1000})
+    void test_debito_cuenta_parametros_ints(double monto) {
+        cuenta.debito(new BigDecimal(monto));
+        assertNotNull(cuenta.getSaldo());
+        assertTrue(cuenta.getSaldo().compareTo(BigDecimal.ZERO) > 0);
+    }
+    
 }
