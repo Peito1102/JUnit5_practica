@@ -12,10 +12,12 @@ import org.vasquez.junit5app.ejemplos.models.Banco;
 import org.vasquez.junit5app.ejemplos.models.Cuenta;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
@@ -23,11 +25,17 @@ import static org.junit.jupiter.api.Assumptions.*;
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CuentaTest {
     Cuenta cuenta;
+    private TestInfo testInfo;
+    private TestReporter testReporter;
 
     @BeforeEach
-    void initMetodoTest() {
+    void initMetodoTest(TestInfo testInfo, TestReporter testReporter) {
         this.cuenta = new Cuenta("Renzo", new BigDecimal("1000.2354"));
+        this.testInfo = testInfo;
+        this.testReporter = testReporter;
         System.out.println("iniciando el método.");
+        testReporter.publishEntry(" ejecutando: " + testInfo.getDisplayName() + " " + testInfo.getTestMethod().orElse(null)
+                .getName() + " " + "con las etiquetas " + testInfo.getTags());
     }
 
     @AfterEach
@@ -52,6 +60,10 @@ class CuentaTest {
         @Test
         @DisplayName("el nombre")
         void test_nombre_cuenta() { //no se usa camelCase normalmente en TEST
+            System.out.println(testInfo.getTags());
+            if (testInfo.getTags().contains("cuenta")) {
+                System.out.println("hacer algo con la etiqueta cuenta");
+            }
             cuenta = new Cuenta("Renzo", new BigDecimal("1000.2354"));
             //cuenta.setPersona("Renzo");
             String esperado = "Renzo";
@@ -375,4 +387,28 @@ class CuentaTest {
     static List<String> montoList() {
         return Arrays.asList("100","200","300","500","700","1000.2354");
     }
+
+    @Nested
+    @Tag("timeout")
+    class EjemploTimeoutTest {
+        @Test
+        @Timeout(3)
+        void pruebaTimeout() throws InterruptedException {
+            TimeUnit.SECONDS.sleep(2);
+        }
+
+        @Test
+        @Timeout(value = 1000,unit = TimeUnit.MILLISECONDS)
+        void pruebaTimeout2() throws InterruptedException {
+            TimeUnit.MILLISECONDS.sleep(900);
+        }
+
+        @Test
+        void testTimeoutAssertions() throws InterruptedException {
+            assertTimeout(Duration.ofSeconds(5),() -> {
+                TimeUnit.MILLISECONDS.sleep(4000);
+            });
+        }
+    }
+
 }
